@@ -1,9 +1,10 @@
-import hero from '@/assets/hero.mp4';
-import logo from '@/assets/logo.jpeg';
-import project from '@/assets/project.mp4';
+import hero from './assets/hero.mp4';
+import logo from './assets/logo.jpeg';
+import project from './assets/project.mp4';
 import { SiFacebook, SiTiktok, SiInstagram } from '@icons-pack/react-simple-icons';
-import type { ReactNode } from 'react';
-import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from './components/ui/accordion';
+import { Section } from './Section';
+import { Form } from './Form';
 
 function Header() {
   return <>
@@ -76,23 +77,6 @@ function CardProject({ src, title }: {
   );
 }
 
-function Section({ title, subtitle, children }: {
-  title: string,
-  subtitle: string,
-  children: ReactNode
-}) {
-  return (
-    <div className='mx-70 flex flex-col items-center gap-8 my-20'>
-      <div className='flex flex-col gap-2 text-center'>
-        <p className='font-bold text-3xl'>{title}</p>
-        <p className='text-neutral-400 text-sm max-w-150'>
-          {subtitle}
-        </p>
-      </div>
-      {children}
-    </div>
-  );
-}
 
 const FAQ_ITEMS = [
   {
@@ -145,6 +129,7 @@ function App() {
       <Hero />
       <Works />
       <FAQs />
+      <Form />
     </>
   )
 }

@@ -30,7 +30,7 @@
   --background: #000;
   --foreground: oklch(0.985 0 0);
   --card: #0b0b0b;
-  --card-accent: #0088ff;
+  --card-accent: #1d5ffe;
   --card-border: #0b3dff;
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
@@ -172,6 +172,10 @@ nav {
 
 .form-project-button {
   @apply flex px-5 py-3 items-center gap-2 rounded-full font-bold text-xs;
+}
+
+.form-project-radio {
+  @apply rounded-full border px-4 py-2 text-xs transition-colors font-medium;
 }
 
 @layer base {
