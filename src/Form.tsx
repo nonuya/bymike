@@ -2,7 +2,7 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator,
 import { Input } from "./components/ui/input";
 import { Checkbox } from "./components/ui/checkbox";
 import { Section } from "./Section";
-import { Controller, useForm, type FieldPath, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { Controller, useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -23,21 +23,11 @@ const formSchema = z
     who: z
       .string({ error: "Please enter your name." })
       .trim()
-      .min(1, "Please enter your name."),
-
-    platform: z.enum(
-      ["Email", "WhatsApp", "Instagram", "Other"],
-      { error: "Please select how you'd like to be contacted." },
-    ),
-
-    platformOther: z
-      .string()
-      .trim()
-      .optional(),
+      .min(1, "Please tell us your name."),
 
     goal: z
       .array(z.enum(GOALS))
-      .min(1, "Please select at least one project goal."),
+      .min(1, "Please select at least one goal for your video."),
 
     goalOther: z
       .string()
@@ -47,12 +37,12 @@ const formSchema = z
     projectDescription: z
       .string({ error: "Please describe your project." })
       .trim()
-      .min(1, "Please describe your project.")
+      .min(1, "Please tell us a little about your project.")
       .max(1000, "Please keep your project description under 1000 characters."),
 
     format: z.enum(
       FORMATS,
-      { error: "Please select a video format." },
+      { error: "Please choose a video format." },
     ),
 
     formatOther: z
@@ -62,23 +52,23 @@ const formSchema = z
 
     videoLength: z.enum(
       VIDEO_LENGTHS,
-      { error: "Please select a video length." },
+      { error: "Please choose an approximate video length." },
     ),
 
     resources: z
-      .string({ error: "Please tell us what resources you're providing." })
+      .string({ error: "Please tell us what resources you can provide." })
       .trim()
-      .min(1, "Please tell us what resources you're providing."),
+      .min(1, "Please tell us what resources you can provide."),
 
     visualStyle: z
-      .string({ error: "Please describe your desired visual style." })
+      .string({ error: "Please describe the visual style you're looking for." })
       .trim()
-      .min(1, "Please describe your desired visual style."),
+      .min(1, "Please describe the visual style you're looking for."),
 
     musicReferences: z
       .string({ error: "Please provide your music references." })
       .trim()
-      .min(1, "Please provide your music references."),
+      .min(1, "Please provide at least one music reference."),
 
     mood: z
       .string()
@@ -87,35 +77,28 @@ const formSchema = z
 
     budgetRange: z.enum(
       BUDGET_RANGES,
-      { error: "Please select your budget range." },
+      { error: "Please choose a budget range." },
     ),
 
     paymentMethod: z.enum(
       PAYMENT_METHODS,
-      { error: "Please select a payment method." },
+      { error: "Please choose a payment method." },
     ),
 
     paymentMethodOther: z
       .string()
       .trim()
       .optional(),
+
+    extraNotes: z.string().trim().optional(),
   })
-  .refine(
-    (data) =>
-      data.platform !== "Other" ||
-      Boolean(data.platformOther),
-    {
-      path: ["platformOther"],
-      message: "Please tell us where you'd like to be contacted.",
-    },
-  )
   .refine(
     (data) =>
       !data.goal.includes("Other") ||
       Boolean(data.goalOther),
     {
       path: ["goalOther"],
-      message: "Please specify your other project goal.",
+      message: "Please tell us what you'd like to achieve with this video.",
     },
   )
   .refine(
@@ -124,7 +107,7 @@ const formSchema = z
       Boolean(data.formatOther),
     {
       path: ["formatOther"],
-      message: "Please specify the format you'd like to use.",
+      message: "Please describe the format you'd like to use.",
     },
   )
   .refine(
@@ -133,7 +116,7 @@ const formSchema = z
       Boolean(data.paymentMethodOther),
     {
       path: ["paymentMethodOther"],
-      message: "Please specify your preferred payment method.",
+      message: "Please specify how you'd prefer to pay.",
     },
   );
 type FormValues = z.infer<typeof formSchema>;
@@ -145,7 +128,7 @@ function FormInput({ form, name, title, required, placeholder }: {
   required?: boolean,
   name: {
     [K in keyof FormValues]: [string] extends [FormValues[K]] ? K : never
-  } [keyof FormValues]
+  }[keyof FormValues]
 }) {
   return (
     <Controller
@@ -190,7 +173,7 @@ function FormRadioGroup<Name extends EnumProps<FormValues>>({ form, items, name,
   return (
     <Controller name={name} control={form.control} render={({ field, fieldState }) => (
       <Field data-invalid={fieldState.invalid}>
-        <FieldLabel>{title}</FieldLabel>
+        <FieldLabel>{title} <span className="text-card-accent">*</span></FieldLabel>
         <FieldGroup>
           <div className="flex gap-2">
             {items.map((item) => {
@@ -246,7 +229,13 @@ function StepOne({ form }: {
       <FieldLegend>SO ... WHO ARE YOU?</FieldLegend>
       <FieldSeparator />
       <FieldGroup>
-        <FormInput form={form} name="who" title="What do you like to be called?" placeholder="John Doe" required />
+        <FormInput
+          form={form}
+          name="who"
+          title="What do you like to be called?"
+          placeholder="e.g. John Doe"
+          required
+        />
       </FieldGroup>
     </FieldSet>
   );
@@ -262,7 +251,7 @@ function StepTwo({ form, who }: {
       <FieldSeparator />
       <Controller name="goal" control={form.control} render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel>What is the goal of the video?</FieldLabel>
+          <FieldLabel>What is the goal of the video? <span className="text-card-accent">*</span></FieldLabel>
           <FieldGroup>
             {GOALS.map((goal, i, _) => (
               <Field key={`form-1-goal-${i}`} orientation="horizontal" className="transition-colors border p-2 border-white/20 rounded has-data-checked:border-card-border has-data-checked:bg-card-accent">
@@ -286,7 +275,7 @@ function StepTwo({ form, who }: {
                   <Field data-invalid={fieldState.invalid}>
                     <Input
                       {...goalOtherField}
-                      placeholder="Specify your goal..."
+                      placeholder="Tell us about your specific goal..."
                     />
 
                     {fieldState.invalid && (
@@ -303,7 +292,13 @@ function StepTwo({ form, who }: {
           </FieldGroup>
         </Field>
       )} />
-      <FormInput name="projectDescription" title="Briefly describe your project" form={form} placeholder="My project is ..." required />
+      <FormInput
+        name="projectDescription"
+        title="Briefly describe your project"
+        form={form}
+        placeholder="Tell us what you're creating and what you'd like to achieve..."
+        required
+      />
     </FieldSet>
   );
 }
@@ -315,12 +310,42 @@ function StepThree({ form }: {
     <FieldSet>
       <FieldLegend>WOW THAT’S AN AMAZING IDEA</FieldLegend>
       <FieldSeparator />
-      <FormRadioGroup form={form} name="format" title="Format" items={FORMATS} other="formatOther" otherPlaceholder="Blablabla" />
+      <FormRadioGroup
+        form={form}
+        name="format"
+        title="Format"
+        items={FORMATS}
+        other="formatOther"
+        otherPlaceholder="e.g. Square (1:1)"
+      />
       <FormRadioGroup form={form} name="videoLength" title="Approximate video length" items={VIDEO_LENGTHS} />
-      <FormInput form={form} name="resources" title="What resources are you providing?" placeholder="Drive link, references, branding, etc." required />
-      <FormInput form={form} name="visualStyle" title="Desired visual style" placeholder="Minimalist, dynamic, etc" required />
-      <FormInput form={form} name="musicReferences" title="Music references" placeholder="..." required />
-      <FormInput form={form} name="mood" title="Don't you have any  references? What mood do you want to express? " placeholder="..." />
+      <FormInput
+        form={form}
+        name="resources"
+        title="What resources are you providing?"
+        placeholder="e.g. Drive link, footage, branding, script, references..."
+        required
+      />
+      <FormInput
+        form={form}
+        name="visualStyle"
+        title="Desired visual style"
+        placeholder="e.g. Minimal, cinematic, energetic, playful..."
+        required
+      />
+      <FormInput
+        form={form}
+        name="musicReferences"
+        title="Music references"
+        placeholder="Paste links to songs, playlists, or references..."
+        required
+      />
+      <FormInput
+        form={form}
+        name="mood"
+        title="Don't have any music references? What mood do you want to express?"
+        placeholder="e.g. Energetic, calm, emotional, playful..."
+      />
     </FieldSet >
   );
 }
@@ -333,7 +358,32 @@ function StepFour({ form }: {
       <FieldLegend>IT’S GONNA BE VIRAL DUDE</FieldLegend>
       <FieldSeparator />
       <FormRadioGroup form={form} name="budgetRange" items={BUDGET_RANGES} title="What is your budget range?" />
-      <FormRadioGroup form={form} name="paymentMethod" items={PAYMENT_METHODS} title="What are your preferred payment methods?" other="paymentMethodOther" otherPlaceholder="Blablabla" />
+      <FormRadioGroup
+        form={form}
+        name="paymentMethod"
+        items={PAYMENT_METHODS}
+        title="What is your preferred payment method?"
+        other="paymentMethodOther"
+        otherPlaceholder="e.g. Bank transfer, Wise, Stripe..."
+      />
+    </FieldSet>
+  );
+}
+
+function StepFive({ form }: {
+  form: UseFormReturn<FormValues>
+}) {
+  return (
+    <FieldSet>
+      <FieldLegend>FUH! THAT’S WAS TIRING</FieldLegend>
+      <FieldSeparator />
+      <p>Aquí va a ir tu metodo de contacto</p>
+      <FormInput
+        form={form}
+        name="extraNotes"
+        title="Wanna say something more? I'm all ears"
+        placeholder="Anything else you'd like us to know?"
+      />
     </FieldSet>
   );
 }
@@ -360,9 +410,10 @@ function Form() {
     <Section title="Get in Touch" subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
       <form className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
         <StepOne form={form} />
-        <StepTwo form={form} who="Ceres" />
+        <StepTwo form={form} who={who} />
         <StepThree form={form} />
         <StepFour form={form} />
+        <StepFive form={form} />
         <div className="mt-5">
           <button className="form-project-button bg-card-border" type="submit">Submit</button>
         </div>
