@@ -410,10 +410,6 @@ function Form() {
     <Section title="Get in Touch" subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
       <form className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
         <StepOne form={form} />
-        <StepTwo form={form} who={who} />
-        <StepThree form={form} />
-        <StepFour form={form} />
-        <StepFive form={form} />
         <div className="mt-5">
           <button className="form-project-button bg-card-border" type="submit">Submit</button>
         </div>

@@ -26,7 +26,7 @@ function Header() {
 
 function Hero() {
   return <>
-    <div className="relative h-screen p-3">
+    <div className="relative h-svh p-3">
       <video
         src={hero}
         autoPlay
@@ -36,12 +36,12 @@ function Hero() {
         className="h-full w-full rounded-[1rem] object-cover brightness-60"
       />
 
-      <div className="absolute inset-20 flex items-center grid grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <h1>
+      <div className="absolute inset-10 md:inset-20 flex items-center grid md:grid-cols-2">
+        <div className="flex flex-col gap-4">
+          <h1 className='text-[80px]/[0.75] md:text-[128px]/[0.75]'>
             Video & Motion Designer
           </h1>
-          <h4>
+          <h4 className='font-geist'>
             Crafting premium motion experiences for brands and studios. From concept to delivery - clean, modern, and polished.
           </h4>
           <h3>
@@ -59,7 +59,8 @@ function CardProject({ src, title }: {
 }) {
   return (
     <div className='
-            card-project-size
+            max-w-[300px]
+            max-h-[400px]
             overflow-hidden
             rounded-[1rem]
             shadow-[0_0_5px_2px_rgba(255,255,255,0.1)]'>
@@ -71,7 +72,7 @@ function CardProject({ src, title }: {
         muted
         loop
         playsInline
-        className='w-full h-full object-cover'
+        className='w-full h-full object-fit'
       />
     </div>
   );
@@ -88,7 +89,7 @@ const FAQ_ITEMS = [
 function Works() {
   return (
     <Section title='Recent Work' subtitle='A curated selection of our latest design and development projects, showcasing our expertise in modern digital experiences.'>
-      <div className='grid grid-cols-2 gap-5'>
+      <div className='flex flex-wrap justify-center gap-5 md:-mx-50'>
         <CardProject src={project} title='Project Name 1' />
         <CardProject src={project} title='Project Name 1' />
         <CardProject src={project} title='Project Name 1' />
