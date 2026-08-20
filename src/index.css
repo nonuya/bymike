@@ -139,12 +139,8 @@ nav {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-.form-project-button {
-  @apply flex px-5 py-3 items-center gap-2 rounded-full font-bold text-xs;
-}
-
 .form-project-radio {
-  @apply rounded-full border px-4 py-2 text-xs transition-colors font-medium;
+  @apply rounded-full border px-4 py-2 text-xs transition-colors font-medium cursor-pointer;
 }
 
 @layer base {

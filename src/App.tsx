@@ -16,9 +16,9 @@ function HeaderInternal({ className }: {
 }) {
   return <>
     <ButtonGroup className={`border font-geist ${className}`}>
-      <a data-slot="button" className={buttonVariants()} href="#works">Projects</a>
+      <a data-slot="button" className={buttonVariants()} href="#projects">Projects</a>
       <a data-slot="button" className={buttonVariants()} href="#faqs">FAQs</a>
-      <a data-slot="button" className={buttonVariants()} href="#form">Request a project</a>
+      <a data-slot="button" className={buttonVariants()} href="#request-a-project">Request a project</a>
     </ButtonGroup>
 
     <div className={`flex gap-5 ${className}`}>
@@ -127,7 +127,7 @@ const FAQ_ITEMS = [
   }
 ];
 
-function Works() {
+function Projects() {
   const container = {
     hidden: {
       opacity: 0
@@ -153,7 +153,7 @@ function Works() {
   };
 
   return (
-    <Section id='works' title='Recent Work' subtitle='A curated selection of our latest design and development projects, showcasing our expertise in modern digital experiences.'>
+    <Section id='projects' title='Recent Work' subtitle='A curated selection of our latest design and development projects, showcasing our expertise in modern digital experiences.'>
       <motion.div
         variants={container}
         initial="hidden"
@@ -198,7 +198,7 @@ function App() {
     <>
       <Header />
       <Hero />
-      <Works />
+      <Projects />
       <FAQs />
       <Form />
     </>

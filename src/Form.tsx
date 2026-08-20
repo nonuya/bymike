@@ -6,6 +6,8 @@ import { Controller, useForm, type FieldValues, type UseFormReturn } from "react
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./components/ui/button";
+import { useRef, useState } from "react";
+import { Progress } from "./components/ui/progress";
 
 const OTHER = "Other" as const;
 const GOALS = [
@@ -222,174 +224,263 @@ function FormRadioGroup<Name extends EnumProps<FormValues>>({ form, items, name,
   );
 }
 
-function StepOne({ form }: {
-  form: UseFormReturn<FormValues>
+function StepOne({ form, onNext }: {
+  form: UseFormReturn<FormValues>,
+  onNext: (isValid: boolean) => void,
 }) {
+  async function handleNext() {
+    const valid = await form.trigger([
+      "who"
+    ]);
+
+    onNext(valid);
+  }
+
   return (
-    <FieldSet>
-      <FieldLegend>SO ... WHO ARE YOU?</FieldLegend>
-      <FieldSeparator />
-      <FieldGroup>
-        <FormInput
-          form={form}
-          name="who"
-          title="What do you like to be called?"
-          placeholder="e.g. John Doe"
-          required
-        />
-      </FieldGroup>
-    </FieldSet>
+    <>
+      <FieldSet>
+        <FieldLegend>SO ... WHO ARE YOU?</FieldLegend>
+        <FieldSeparator />
+        <FieldGroup>
+          <FormInput
+            form={form}
+            name="who"
+            title="What do you like to be called?"
+            placeholder="e.g. John Doe"
+            required
+          />
+        </FieldGroup>
+      </FieldSet>
+      <div className="mt-5 flex justify-center gap-5">
+        <Button className="bg-card-border hover:bg-card-accent" onClick={handleNext} type="button">Next</Button>
+      </div>
+    </>
   );
 }
 
-function StepTwo({ form, who }: {
+function StepTwo({ form, who, onNext, onBack }: {
   form: UseFormReturn<FormValues>,
   who: string,
+  onBack: () => void,
+  onNext: (isValid: boolean) => void,
 }) {
+  async function handleNext() {
+    const valid = await form.trigger([
+      "goal",
+      "goalOther",
+      "projectDescription",
+    ]);
+
+    onNext(valid);
+  }
+
   return (
-    <FieldSet>
-      <FieldLegend>HI {who} :D! NICE TO MEET YOU</FieldLegend>
-      <FieldSeparator />
-      <Controller name="goal" control={form.control} render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel>What is the goal of the video? <span className="text-card-accent">*</span></FieldLabel>
-          <FieldGroup>
-            {GOALS.map((goal, i, _) => (
-              <Field key={`form-1-goal-${i}`} orientation="horizontal" className="transition-colors border p-2 border-white/20 rounded has-data-checked:border-card-border has-data-checked:bg-card-accent">
-                <Checkbox id={`form-1-goal-checkbox-${i}`} name={field.name} checked={field.value.includes(goal)} onCheckedChange={(checked) => {
-                  const newValue = checked ? [...field.value, goal] : field.value.filter((v) => v !== goal);
-                  field.onChange(newValue);
-                  field.onBlur();
-                }} />
-                <FieldLabel htmlFor={`form-1-goal-checkbox-${i}`} className="text-xs">
-                  {goal}
-                </FieldLabel>
+    <>
+      <FieldSet>
+        <FieldLegend>HI {who} :D! NICE TO MEET YOU</FieldLegend>
+        <FieldSeparator />
+        <Controller name="goal" control={form.control} render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel>What is the goal of the video? <span className="text-card-accent">*</span></FieldLabel>
+            <FieldGroup>
+              {GOALS.map((goal, i, _) => (
+                <Field
+                  key={`form-1-goal-${i}`}
+                  orientation="horizontal"
+                  className="
+                    transition-colors
+                    border
+                    border-white/20
+                    rounded
+                    px-2
+                    has-data-checked:border-card-border
+                    has-data-checked:bg-card-accent">
+                  <Checkbox id={`form-1-goal-checkbox-${i}`} name={field.name} checked={field.value.includes(goal)} onCheckedChange={(checked) => {
+                    const newValue = checked ? [...field.value, goal] : field.value.filter((v) => v !== goal);
+                    field.onChange(newValue);
+                    field.onBlur();
+                  }} />
+                  <FieldLabel htmlFor={`form-1-goal-checkbox-${i}`} className="text-xs py-2">
+                    {goal}
+                  </FieldLabel>
+                </Field>
+              ))}
 
-              </Field>
-            ))}
+              {field.value.includes("Other") && (
+                <Controller
+                  name="goalOther"
+                  control={form.control}
+                  render={({ field: goalOtherField, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <Input
+                        {...goalOtherField}
+                        placeholder="Tell us about your specific goal..."
+                      />
 
-            {field.value.includes("Other") && (
-              <Controller
-                name="goalOther"
-                control={form.control}
-                render={({ field: goalOtherField, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <Input
-                      {...goalOtherField}
-                      placeholder="Tell us about your specific goal..."
-                    />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              )}
 
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            )}
-
-            {fieldState.invalid && (
-              <FieldError errors={[fieldState.error]} />
-            )}
-          </FieldGroup>
-        </Field>
-      )} />
-      <FormInput
-        name="projectDescription"
-        title="Briefly describe your project"
-        form={form}
-        placeholder="Tell us what you're creating and what you'd like to achieve..."
-        required
-      />
-    </FieldSet>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </FieldGroup>
+          </Field>
+        )} />
+        <FormInput
+          name="projectDescription"
+          title="Briefly describe your project"
+          form={form}
+          placeholder="Tell us what you're creating and what you'd like to achieve..."
+          required
+        />
+      </FieldSet>
+      <div className="mt-5 flex justify-center gap-5">
+        <Button onClick={onBack} type="button">Back</Button>
+        <Button className="bg-card-border hover:bg-card-accent" onClick={handleNext} type="button">Next</Button>
+      </div>
+    </>
   );
 }
 
-function StepThree({ form }: {
-  form: UseFormReturn<FormValues>
+function StepThree({ form, onBack, onNext }: {
+  form: UseFormReturn<FormValues>,
+  onBack: () => void,
+  onNext: (isValid: boolean) => void,
 }) {
+  async function handleNext() {
+    const valid = await form.trigger([
+      "format",
+      "formatOther",
+      "videoLength",
+      "resources",
+      "visualStyle",
+      "musicReferences",
+      "mood"
+    ]);
+
+    onNext(valid);
+  }
+
   return (
-    <FieldSet>
-      <FieldLegend>WOW THAT’S AN AMAZING IDEA</FieldLegend>
-      <FieldSeparator />
-      <FormRadioGroup
-        form={form}
-        name="format"
-        title="Format"
-        items={FORMATS}
-        other="formatOther"
-        otherPlaceholder="e.g. Square (1:1)"
-      />
-      <FormRadioGroup form={form} name="videoLength" title="Approximate video length" items={VIDEO_LENGTHS} />
-      <FormInput
-        form={form}
-        name="resources"
-        title="What resources are you providing?"
-        placeholder="e.g. Drive link, footage, branding, script, references..."
-        required
-      />
-      <FormInput
-        form={form}
-        name="visualStyle"
-        title="Desired visual style"
-        placeholder="e.g. Minimal, cinematic, energetic, playful..."
-        required
-      />
-      <FormInput
-        form={form}
-        name="musicReferences"
-        title="Music references"
-        placeholder="Paste links to songs, playlists, or references..."
-        required
-      />
-      <FormInput
-        form={form}
-        name="mood"
-        title="Don't have any music references? What mood do you want to express?"
-        placeholder="e.g. Energetic, calm, emotional, playful..."
-      />
-    </FieldSet >
+    <>
+      <FieldSet>
+        <FieldLegend>WOW THAT’S AN AMAZING IDEA</FieldLegend>
+        <FieldSeparator />
+        <FormRadioGroup
+          form={form}
+          name="format"
+          title="Format"
+          items={FORMATS}
+          other="formatOther"
+          otherPlaceholder="e.g. Square (1:1)"
+        />
+        <FormRadioGroup form={form} name="videoLength" title="Approximate video length" items={VIDEO_LENGTHS} />
+        <FormInput
+          form={form}
+          name="resources"
+          title="What resources are you providing?"
+          placeholder="e.g. Drive link, footage, branding, script, references..."
+          required
+        />
+        <FormInput
+          form={form}
+          name="visualStyle"
+          title="Desired visual style"
+          placeholder="e.g. Minimal, cinematic, energetic, playful..."
+          required
+        />
+        <FormInput
+          form={form}
+          name="musicReferences"
+          title="Music references"
+          placeholder="Paste links to songs, playlists, or references..."
+          required
+        />
+        <FormInput
+          form={form}
+          name="mood"
+          title="Don't have any music references? What mood do you want to express?"
+          placeholder="e.g. Energetic, calm, emotional, playful..."
+        />
+      </FieldSet >
+      <div className="mt-5 flex justify-center gap-5">
+        <Button onClick={onBack} type="button">Back</Button>
+        <Button className="bg-card-border hover:bg-card-accent" onClick={handleNext} type="button">Next</Button>
+      </div>
+    </>
   );
 }
 
-function StepFour({ form }: {
-  form: UseFormReturn<FormValues>
+function StepFour({ form, onBack, onNext }: {
+  form: UseFormReturn<FormValues>,
+  onBack: () => void,
+  onNext: (isValid: boolean) => void,
 }) {
+  async function handleNext() {
+    const valid = await form.trigger([
+      "budgetRange",
+      "paymentMethod",
+      "paymentMethodOther"
+    ]);
+
+    onNext(valid);
+  }
+
   return (
-    <FieldSet>
-      <FieldLegend>IT’S GONNA BE VIRAL DUDE</FieldLegend>
-      <FieldSeparator />
-      <FormRadioGroup form={form} name="budgetRange" items={BUDGET_RANGES} title="What is your budget range?" />
-      <FormRadioGroup
-        form={form}
-        name="paymentMethod"
-        items={PAYMENT_METHODS}
-        title="What is your preferred payment method?"
-        other="paymentMethodOther"
-        otherPlaceholder="e.g. Bank transfer, Wise, Stripe..."
-      />
-    </FieldSet>
+    <>
+      <FieldSet>
+        <FieldLegend>IT’S GONNA BE VIRAL DUDE</FieldLegend>
+        <FieldSeparator />
+        <FormRadioGroup form={form} name="budgetRange" items={BUDGET_RANGES} title="What is your budget range?" />
+        <FormRadioGroup
+          form={form}
+          name="paymentMethod"
+          items={PAYMENT_METHODS}
+          title="What is your preferred payment method?"
+          other="paymentMethodOther"
+          otherPlaceholder="e.g. Bank transfer, Wise, Stripe..."
+        />
+      </FieldSet>
+      <div className="mt-5 flex justify-center gap-5">
+        <Button onClick={onBack} type="button">Back</Button>
+        <Button className="bg-card-border hover:bg-card-accent" onClick={handleNext} type="button">Next</Button>
+      </div>
+    </>
   );
 }
 
-function StepFive({ form }: {
-  form: UseFormReturn<FormValues>
+function StepFive({ form, onBack }: {
+  form: UseFormReturn<FormValues>,
+  onBack: () => void,
 }) {
   return (
-    <FieldSet>
-      <FieldLegend>FUH! THAT’S WAS TIRING</FieldLegend>
-      <FieldSeparator />
-      <p>Aquí va a ir tu metodo de contacto</p>
-      <FormInput
-        form={form}
-        name="extraNotes"
-        title="Wanna say something more? I'm all ears"
-        placeholder="Anything else you'd like us to know?"
-      />
-    </FieldSet>
+    <>
+      <FieldSet>
+        <FieldLegend>FUH! THAT’S WAS TIRING</FieldLegend>
+        <FieldSeparator />
+        <p>Aquí va a ir tu metodo de contacto</p>
+        <FormInput
+          form={form}
+          name="extraNotes"
+          title="Wanna say something more? I'm all ears"
+          placeholder="Anything else you'd like us to know?"
+        />
+      </FieldSet>
+      <div className="mt-5 flex justify-center gap-5">
+        <Button onClick={onBack} type="button">Back</Button>
+        <Button className="bg-card-border hover:bg-card-accent" type="submit">Submit</Button>
+      </div>
+    </>
   );
 }
 
 function Form() {
+  const [step, setStep] = useState(0);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -400,6 +491,7 @@ function Form() {
       formatOther: "",
     }
   });
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const who = form.watch("who");
 
@@ -407,13 +499,38 @@ function Form() {
     console.log(data);
   }
 
+  function focusForm() {
+    requestAnimationFrame(() => {
+      formRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+      });
+    });
+  }
+
+  function onBack() {
+    focusForm();
+    setStep(step - 1);
+  }
+
+  function onNext(isValid: boolean) {
+    if (!isValid) {
+      return;
+    }
+
+    focusForm();
+    setStep(step + 1);
+  }
+
   return (
-    <Section id="form" title="Get in Touch" subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
-      <form className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
-        <StepOne form={form} />
-        <div className="mt-5">
-          <Button className="form-project-button bg-card-border" type="submit">Submit</Button>
-        </div>
+    <Section id="request-a-project" title="Get in Touch" subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
+      <form ref={formRef} className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
+        <Progress value={step*100 / 4} />
+        {step === 0 && <StepOne form={form} onNext={onNext} />}
+        {step === 1 && <StepTwo who={who} form={form} onNext={onNext} onBack={onBack} />}
+        {step === 2 && <StepThree form={form} onNext={onNext} onBack={onBack} />}
+        {step === 3 && <StepFour form={form} onNext={onNext} onBack={onBack} />}
+        {step === 4 && <StepFive form={form} onBack={onBack} />}
       </form>
     </Section>
   );
