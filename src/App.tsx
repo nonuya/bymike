@@ -7,7 +7,7 @@ import { Section } from './Section';
 import { Form } from './Form';
 import { ButtonGroup } from './components/ui/button-group';
 import { Button, buttonVariants } from './components/ui/button';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -91,12 +91,15 @@ function Hero() {
   </div>;
 }
 
-function CardProject({ src, title }: {
+function CardProject({ src, title, variants }: {
   src: string,
-  title: string
+  title: string,
+  variants: Variants,
 }) {
   return (
-    <div className='
+    <motion.div
+      variants={variants}
+      className='
             max-w-[300px]
             max-h-[400px]
             overflow-hidden
@@ -112,7 +115,7 @@ function CardProject({ src, title }: {
         playsInline
         className='w-full h-full object-fit'
       />
-    </div>
+    </motion.div>
   );
 }
 
@@ -125,16 +128,45 @@ const FAQ_ITEMS = [
 ];
 
 function Works() {
+  const container = {
+    hidden: {
+      opacity: 0
+    },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 1,
+        staggerChildren: 0.3
+      }
+    }
+  };
+
+  const item = {
+    hidden: {
+      opacity: 0,
+      x: -50
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+    }
+  };
+
   return (
     <Section id='works' title='Recent Work' subtitle='A curated selection of our latest design and development projects, showcasing our expertise in modern digital experiences.'>
-      <div className='flex flex-wrap justify-center gap-5 md:-mx-50'>
-        <CardProject src={project} title='Project Name 1' />
-        <CardProject src={project} title='Project Name 1' />
-        <CardProject src={project} title='Project Name 1' />
-        <CardProject src={project} title='Project Name 1' />
-        <CardProject src={project} title='Project Name 1' />
-        <CardProject src={project} title='Project Name 1' />
-      </div>
+      <motion.div
+        variants={container}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{once: true}}
+        className='flex flex-wrap justify-center gap-5 md:-mx-50'>
+        <CardProject variants={item} src={project} title='Project Name 1' />
+        <CardProject variants={item} src={project} title='Project Name 1' />
+        <CardProject variants={item} src={project} title='Project Name 1' />
+        <CardProject variants={item} src={project} title='Project Name 1' />
+        <CardProject variants={item} src={project} title='Project Name 1' />
+        <CardProject variants={item} src={project} title='Project Name 1' />
+      </motion.div>
     </Section>
   );
 }
