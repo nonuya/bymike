@@ -12,12 +12,12 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 function HeaderInternal({ className }: {
-  className?: string
+  className?: string,
 }) {
   return <>
     <ButtonGroup className={`border font-geist ${className}`}>
-      <a data-slot="button" className={buttonVariants()} href='#'>Projects</a>
-      <a data-slot="button" className={buttonVariants()}>FAQs</a>
+      <a data-slot="button" className={buttonVariants()} href="#works">Projects</a>
+      <a data-slot="button" className={buttonVariants()} href="#faqs">FAQs</a>
       <a data-slot="button" className={buttonVariants()}>Request a project</a>
     </ButtonGroup>
 
@@ -124,7 +124,7 @@ const FAQ_ITEMS = [
 
 function Works() {
   return (
-    <Section title='Recent Work' subtitle='A curated selection of our latest design and development projects, showcasing our expertise in modern digital experiences.'>
+    <Section id='works' title='Recent Work' subtitle='A curated selection of our latest design and development projects, showcasing our expertise in modern digital experiences.'>
       <div className='flex flex-wrap justify-center gap-5 md:-mx-50'>
         <CardProject src={project} title='Project Name 1' />
         <CardProject src={project} title='Project Name 1' />
@@ -139,7 +139,7 @@ function Works() {
 
 function FAQs() {
   return (
-    <Section title='Preguntas Frecuentes' subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
+    <Section id='faqs' title='Preguntas Frecuentes' subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
       <Accordion>
         {
           FAQ_ITEMS.map((item, i, _) => (
