@@ -5,6 +5,7 @@ import { Section } from "./Section";
 import { Controller, useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "./components/ui/button";
 
 const OTHER = "Other" as const;
 const GOALS = [
@@ -411,7 +412,7 @@ function Form() {
       <form className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
         <StepOne form={form} />
         <div className="mt-5">
-          <button className="form-project-button bg-card-border" type="submit">Submit</button>
+          <Button className="form-project-button bg-card-border" type="submit">Submit</Button>
         </div>
       </form>
     </Section>

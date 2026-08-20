@@ -5,52 +5,101 @@ import { SiFacebook, SiTiktok, SiInstagram } from '@icons-pack/react-simple-icon
 import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from './components/ui/accordion';
 import { Section } from './Section';
 import { Form } from './Form';
+import { ButtonGroup } from './components/ui/button-group';
+import { Button, buttonVariants } from './components/ui/button';
+import { AnimatePresence, motion } from 'motion/react';
+import { Menu } from 'lucide-react';
+import { useState } from 'react';
 
-function Header() {
+function HeaderInternal({ className }: {
+  className?: string
+}) {
   return <>
-    <header className='flex items-center justify-between px-20 py-2 border-b'>
-      <img src={logo} width={66} height={66} className='rounded-full' />
-      <nav className='flex gap-6 rounded-full border px-4 py-1 bg-white/3'>
-        <a>Projects</a>
-        <a>FAQs</a>
-        <a>Request a project</a>
-      </nav>
-      <div className='flex gap-5'>
-        <SiTiktok />
-        <SiInstagram />
-        <SiFacebook />
-      </div>
-    </header>
+    <ButtonGroup className={`border font-geist ${className}`}>
+      <a data-slot="button" className={buttonVariants()} href='#'>Projects</a>
+      <a data-slot="button" className={buttonVariants()}>FAQs</a>
+      <a data-slot="button" className={buttonVariants()}>Request a project</a>
+    </ButtonGroup>
+
+    <div className={`flex gap-5 ${className}`}>
+      <SiTiktok className='w-4' />
+      <SiInstagram className='w-4' />
+      <SiFacebook className='w-4' />
+    </div>
   </>;
 }
 
-function Hero() {
-  return <>
-    <div className="relative h-svh p-3">
-      <video
-        src={hero}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="h-full w-full rounded-[1rem] object-cover brightness-60"
-      />
+const variants = {
+  open: {
+    height: "auto",
+    opacity: 1,
+  },
+  closed: {
+    height: 0,
+    opacity: 0,
+  }
+}
 
-      <div className="absolute inset-10 md:inset-20 flex items-center grid md:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <h1 className='text-[80px]/[0.75] md:text-[128px]/[0.75]'>
-            Video & Motion Designer
-          </h1>
-          <h4 className='font-geist'>
-            Crafting premium motion experiences for brands and studios. From concept to delivery - clean, modern, and polished.
-          </h4>
-          <h3>
-            <span className="font-geist">—</span> BYMIKE
-          </h3>
-        </div>
+function Header() {
+  const [open, setOpen] = useState(false);
+  return <motion.header className="relative bg-black sticky top-0 z-50">
+    <div className="flex items-center justify-between px-5 md:px-20 h-16">
+      <img src={logo} className="rounded-full w-14" />
+
+      <HeaderInternal className="hidden sm:flex" />
+
+      <Button
+        className="sm:hidden"
+        onClick={() => setOpen(prev => !prev)}
+      >
+        <Menu />
+      </Button>
+    </div>
+    <motion.div
+      initial={false}
+      animate={{
+        height: open ? "auto" : 0,
+        opacity: open ? 1 : 0,
+        pointerEvents: open ? "auto" : "none",
+      }}
+      transition={{
+        height: { duration: 0.25 },
+        opacity: { duration: 0.15 },
+      }}
+      className="absolute overflow-hidden bg-black w-full"
+    >
+      <div className="sm:hidden p-2 flex justify-between">
+        <HeaderInternal />
+      </div>
+    </motion.div>
+  </motion.header>;
+}
+
+function Hero() {
+  return <div className="relative flex h-[calc(100svh-4rem)] min-h-0 px-3 py-2">
+    <video
+      src={hero}
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="w-full h-full rounded-[1rem] object-cover brightness-60"
+    />
+
+    <div className="absolute inset-10 md:inset-20 flex items-center grid md:grid-cols-2">
+      <div className="flex flex-col gap-4">
+        <h1 className='text-[80px]/[0.75] md:text-[128px]/[0.75]'>
+          Video & Motion Designer
+        </h1>
+        <h4 className='font-geist'>
+          Crafting premium motion experiences for brands and studios. From concept to delivery - clean, modern, and polished.
+        </h4>
+        <h3>
+          <span className="font-geist">—</span> BYMIKE
+        </h3>
       </div>
     </div>
-  </>;
+  </div>;
 }
 
 function CardProject({ src, title }: {

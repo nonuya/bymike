@@ -31,7 +31,7 @@
   --foreground: oklch(0.985 0 0);
   --card: #0b0b0b;
   --card-accent: #1d5ffe;
-  --card-border: #6B89FF;
+  --card-border: #0b3dff;
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
@@ -80,7 +80,6 @@ h2 {
 h3 {
   font-family: var(--font-gasoek-one);
   font-size: 36px;
-  color: var(--card-border)
 }
 
 p {
