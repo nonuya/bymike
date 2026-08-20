@@ -63,6 +63,7 @@
 
 html {
   scrollbar-color: #555 transparent;
+  scroll-behavior: smooth;
 }
 
 body {

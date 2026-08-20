@@ -8,7 +8,7 @@ import { Form } from './Form';
 import { ButtonGroup } from './components/ui/button-group';
 import { Button, buttonVariants } from './components/ui/button';
 import { AnimatePresence, motion } from 'motion/react';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 function HeaderInternal({ className }: {
@@ -29,21 +29,10 @@ function HeaderInternal({ className }: {
   </>;
 }
 
-const variants = {
-  open: {
-    height: "auto",
-    opacity: 1,
-  },
-  closed: {
-    height: 0,
-    opacity: 0,
-  }
-}
-
 function Header() {
   const [open, setOpen] = useState(false);
-  return <motion.header className="relative bg-black sticky top-0 z-50">
-    <div className="flex items-center justify-between px-5 md:px-20 h-16">
+  return <header className="fixed w-full top-0 z-50">
+    <div className="bg-black flex items-center justify-between px-2 md:px-20 h-16">
       <img src={logo} className="rounded-full w-14" />
 
       <HeaderInternal className="hidden sm:flex" />
@@ -52,31 +41,29 @@ function Header() {
         className="sm:hidden"
         onClick={() => setOpen(prev => !prev)}
       >
-        <Menu />
+        <motion.div
+          animate={{ rotate: open ? 90 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {open ? <X /> : <Menu />}
+        </motion.div>
       </Button>
     </div>
-    <motion.div
-      initial={false}
-      animate={{
-        height: open ? "auto" : 0,
-        opacity: open ? 1 : 0,
-        pointerEvents: open ? "auto" : "none",
-      }}
-      transition={{
-        height: { duration: 0.25 },
-        opacity: { duration: 0.15 },
-      }}
-      className="absolute overflow-hidden bg-black w-full"
-    >
-      <div className="sm:hidden p-2 flex justify-between">
-        <HeaderInternal />
-      </div>
-    </motion.div>
-  </motion.header>;
+    <AnimatePresence>
+      {open &&
+        <motion.div className="sm:hidden bg-black overflow-hidden" initial={{ height: 0 }} animate={{ height: "auto" }} transition={{ duration: 0.2 }} exit={{ height: 0 }}>
+          <div className='flex p-2 items-center justify-between'>
+            <HeaderInternal />
+          </div>
+        </motion.div>
+      }
+    </AnimatePresence>
+
+  </header>;
 }
 
 function Hero() {
-  return <div className="relative flex h-[calc(100svh-4rem)] min-h-0 px-3 py-2">
+  return <div className="relative flex h-[calc(100svh-4rem)] min-h-0 px-3 py-2 mt-16">
     <video
       src={hero}
       autoPlay
