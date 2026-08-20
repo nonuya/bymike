@@ -18,7 +18,7 @@ function HeaderInternal({ className }: {
     <ButtonGroup className={`border font-geist ${className}`}>
       <a data-slot="button" className={buttonVariants()} href="#works">Projects</a>
       <a data-slot="button" className={buttonVariants()} href="#faqs">FAQs</a>
-      <a data-slot="button" className={buttonVariants()}>Request a project</a>
+      <a data-slot="button" className={buttonVariants()} href="#form">Request a project</a>
     </ButtonGroup>
 
     <div className={`flex gap-5 ${className}`}>
@@ -33,7 +33,9 @@ function Header() {
   const [open, setOpen] = useState(false);
   return <header className="fixed w-full top-0 z-50">
     <div className="bg-black flex items-center justify-between px-2 md:px-20 h-16">
-      <img src={logo} className="rounded-full w-14" />
+      <a href='#'>
+        <img src={logo} className="rounded-full w-14" />
+      </a>
 
       <HeaderInternal className="hidden sm:flex" />
 
