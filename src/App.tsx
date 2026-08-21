@@ -65,25 +65,25 @@ function Header() {
 }
 
 function Hero() {
-  return <div className="relative flex h-[calc(100svh-4rem)] min-h-0 px-3 py-2 mt-16">
+  return <div className="relative mt-16 px-4 sm:px-20 items-center grid sm:grid-cols-2 h-[calc(100svh-4rem)]">
     <video
       src={hero}
       autoPlay
       muted
       loop
       playsInline
-      className="w-full h-full rounded-[1rem] object-cover brightness-60"
+      className="absolute w-full h-full p-1 rounded-[1rem] object-cover brightness-60 -z-10"
     />
 
-    <div className="absolute inset-10 md:inset-20 flex items-center grid md:grid-cols-2">
-      <div className="flex flex-col gap-4">
-        <h1 className='text-[80px]/[0.75] md:text-[128px]/[0.75]'>
-          Video & Motion Designer
-        </h1>
-        <h4 className='font-geist'>
+    <div className="flex flex-col gap-4">
+      <h1 className='text-[8svh] sm:text-[16svh] leading-[0.75]'>
+        Video & <br /> Motion Designer
+      </h1>
+      <div>
+        <h4 className='font-geist text-[2svh] sm:text-[3svh] leading-none mb-2'>
           Crafting premium motion experiences for brands and studios. From concept to delivery - clean, modern, and polished.
         </h4>
-        <h3>
+        <h3 className='font-gasoek-one text-[2svh] sm:text-[4svh]'>
           <span className="font-geist">—</span> BYMIKE
         </h3>
       </div>
@@ -158,8 +158,8 @@ function Projects() {
         variants={container}
         initial="hidden"
         whileInView="visible"
-        viewport={{once: true}}
-        className='flex flex-wrap justify-center gap-5 md:-mx-50'>
+        viewport={{ once: true }}
+        className='flex flex-wrap justify-center gap-5 md:-mx-40 lg:-mx-70'>
         <CardProject variants={item} src={project} title='Project Name 1' />
         <CardProject variants={item} src={project} title='Project Name 1' />
         <CardProject variants={item} src={project} title='Project Name 1' />

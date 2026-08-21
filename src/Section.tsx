@@ -38,7 +38,7 @@ export function Section({ id, title, subtitle, children }: {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className='scroll-mt-32 mx-10 md:mx-50 xl:mx-100 flex flex-col items-center gap-8 my-20'>
+      className='scroll-mt-32 mx-10 md:mx-40 lg:mx-70 2xl:mx-100 flex flex-col items-center gap-8 my-20'>
       <motion.div
         variants={container}
         initial="hidden"
