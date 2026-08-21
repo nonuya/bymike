@@ -11,6 +11,7 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
   ],
+  base: "/bymike/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
