@@ -8,10 +8,12 @@ export function Section({ id, title, subtitle, children }: {
 }) {
   const container = {
     hidden: {
-      opacity: 0
+      opacity: 0,
+      y: 50
     },
     visible: {
       opacity: 1,
+      y: 0,
       transition: {
         staggerChildren: 0.2
       }
@@ -35,13 +37,13 @@ export function Section({ id, title, subtitle, children }: {
       variants={container}
       initial="hidden"
       whileInView="visible"
-      viewport={{once: true}}
+      viewport={{ once: true }}
       className='scroll-mt-32 mx-10 md:mx-50 xl:mx-100 flex flex-col items-center gap-8 my-20'>
       <motion.div
         variants={container}
         initial="hidden"
         whileInView="visible"
-        viewport={{once: true}}
+        viewport={{ once: true }}
         className='flex flex-col gap-2 text-center'>
         <motion.p variants={item} className='font-bold text-3xl'>{title}</motion.p>
         <motion.p variants={item} className='text-neutral-400 text-sm max-w-150'>
