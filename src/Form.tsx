@@ -130,7 +130,7 @@ function FormInput({ form, name, title, required, placeholder }: {
   placeholder: string,
   required?: boolean,
   name: {
-    [K in keyof FormValues]: [string] extends [FormValues[K]] ? K : never
+    [K in keyof FormValues]-?: [string] extends [FormValues[K]] ? K : never
   }[keyof FormValues]
 }) {
   return (
@@ -501,7 +501,7 @@ function Form() {
 
   function focusForm() {
     requestAnimationFrame(() => {
-      formRef.current.scrollIntoView({
+      formRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "nearest"
       });
