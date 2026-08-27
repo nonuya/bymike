@@ -135,7 +135,7 @@ nav {
 }
 
 .form-project-radio {
-  @apply rounded-full border px-4 py-2 text-xs transition-colors font-medium cursor-pointer;
+  @apply rounded-full border px-4 py-2 text-xs transition-colors font-medium cursor-pointer text-white;
 }
 
 @layer base {

@@ -2,7 +2,7 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator,
 import { Input } from "./components/ui/input";
 import { Checkbox } from "./components/ui/checkbox";
 import { Section } from "./Section";
-import { Controller, useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { Controller, useForm, type FieldError as FormFieldError, type FieldPath, type FieldPathValue, type FieldValues, type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./components/ui/button";
@@ -28,14 +28,19 @@ const formSchema = z
       .trim()
       .min(1, "Please tell us your name."),
 
-    goal: z
-      .array(z.enum(GOALS))
-      .min(1, "Please select at least one goal for your video."),
-
-    goalOther: z
-      .string()
-      .trim()
-      .optional(),
+    goal: z.object({
+      goal: z.array(z.enum(GOALS)),
+      other: z
+        .string({ error: "Please tell us your goal." })
+        .trim()
+        .optional(),
+    })
+      .refine((data) => data.goal.length > 0, {
+        message: "Please select at least one goal for your video."
+      })
+      .refine((data) => !data.goal.includes(OTHER) || !!data.other, {
+        message: "Please tell us what you'd like to achieve with this video.",
+      }),
 
     projectDescription: z
       .string({ error: "Please describe your project." })
@@ -43,20 +48,31 @@ const formSchema = z
       .min(1, "Please tell us a little about your project.")
       .max(1000, "Please keep your project description under 1000 characters."),
 
-    format: z.enum(
-      FORMATS,
-      { error: "Please choose a video format." },
-    ),
+    format: z.object({
+      value: z.enum(
+        FORMATS,
+        { error: "Please choose a video format." },
+      ),
+      other: z
+        .string()
+        .trim()
+        .optional(),
+    })
+      .refine(
+        (data) =>
+          data.value !== OTHER ||
+          Boolean(data.other),
+        {
+          message: "Please describe the format you'd like to use.",
+        },
+      ),
 
-    formatOther: z
-      .string()
-      .trim()
-      .optional(),
-
-    videoLength: z.enum(
-      VIDEO_LENGTHS,
-      { error: "Please choose an approximate video length." },
-    ),
+    videoLength: z.object({
+      value: z.enum(
+        VIDEO_LENGTHS,
+        { error: "Please choose an approximate video length." },
+      ),
+    }),
 
     resources: z
       .string({ error: "Please tell us what resources you can provide." })
@@ -78,60 +94,44 @@ const formSchema = z
       .trim()
       .optional(),
 
-    budgetRange: z.enum(
-      BUDGET_RANGES,
-      { error: "Please choose a budget range." },
-    ),
+    budgetRange: z.object({
+      value: z.enum(
+        BUDGET_RANGES,
+        { error: "Please choose a budget range." },
+      ),
+    }),
 
-    paymentMethod: z.enum(
-      PAYMENT_METHODS,
-      { error: "Please choose a payment method." },
+    paymentMethod: z.object({
+      value: z.enum(
+        PAYMENT_METHODS,
+        { error: "Please choose a payment method." },
+      ),
+      other: z
+        .string()
+        .trim()
+        .optional(),
+    }).refine(
+      (data) =>
+        data.value !== OTHER ||
+        Boolean(data.other),
+      {
+        message: "Please specify how you'd prefer to pay.",
+      },
     ),
-
-    paymentMethodOther: z
-      .string()
-      .trim()
-      .optional(),
 
     extraNotes: z.string().trim().optional(),
-  })
-  .refine(
-    (data) =>
-      !data.goal.includes("Other") ||
-      Boolean(data.goalOther),
-    {
-      path: ["goalOther"],
-      message: "Please tell us what you'd like to achieve with this video.",
-    },
-  )
-  .refine(
-    (data) =>
-      data.format !== "Other" ||
-      Boolean(data.formatOther),
-    {
-      path: ["formatOther"],
-      message: "Please describe the format you'd like to use.",
-    },
-  )
-  .refine(
-    (data) =>
-      data.paymentMethod !== "Other" ||
-      Boolean(data.paymentMethodOther),
-    {
-      path: ["paymentMethodOther"],
-      message: "Please specify how you'd prefer to pay.",
-    },
-  );
+  });
+
 type FormValues = z.infer<typeof formSchema>;
+type StringFormPathInternal<T extends FieldPath<FormValues>> = T extends any ? NonNullable<FieldPathValue<FormValues, T>> extends string ? T : never : never;
+type StringFormPath = StringFormPathInternal<FieldPath<FormValues>>;
 
 function FormInput({ form, name, title, required, placeholder }: {
   form: UseFormReturn<FormValues>,
-  title: string,
+  title?: string,
   placeholder: string,
   required?: boolean,
-  name: {
-    [K in keyof FormValues]-?: [string] extends [FormValues[K]] ? K : never
-  }[keyof FormValues]
+  name: StringFormPath,
 }) {
   return (
     <Controller
@@ -139,7 +139,7 @@ function FormInput({ form, name, title, required, placeholder }: {
       control={form.control}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel>{title} {required && <span className="text-card-accent">*</span>}</FieldLabel>
+          {title && <FieldLabel>{title} {required && <span className="text-card-accent">*</span>}</FieldLabel>}
           <Input {...field} placeholder={placeholder} />
           {fieldState.invalid && (
             <FieldError errors={[fieldState.error]} />
@@ -151,76 +151,75 @@ function FormInput({ form, name, title, required, placeholder }: {
 }
 
 type IsUnion<T, U = T> = T extends any ? [U] extends [T] ? false : true : never;
+
 type EnumProps<TFormValues extends FieldValues> = {
-  [K in keyof TFormValues]-?: IsUnion<TFormValues[K]> extends true ? K : never
+  [K in keyof TFormValues]-?: TFormValues[K] extends { value: infer V, other?: string } ? IsUnion<V> extends true ? K : never : never
 }[keyof TFormValues]; // Es lo mismo que FormValues[K] -> Obtiene los Keys
 
-type GetOtherName<K extends keyof FormValues, OtherK = `${K & string}Other`> = OtherK extends keyof FormValues ? OtherK : never;
-
-function FormRadioGroup<Name extends EnumProps<FormValues>>({ form, items, name, title, other, otherPlaceholder }: {
+function FormRadioGroup<Name extends EnumProps<FormValues>>({ form, items, name, title, other, placeholder }: {
   form: UseFormReturn<FormValues>,
   name: Name,
   title: string,
   items: readonly string[],
-} & (
-    GetOtherName<Name> extends never ?
-    {
-      other?: never,
-      otherPlaceholder?: never
-    } :
-    {
-      other: GetOtherName<Name>,
-      otherPlaceholder: string,
-    }
-  )) {
+} & (`${Name}.other` extends FieldPath<FormValues> ? {
+  other: `${Name}.other`,
+  placeholder: string
+} : {
+  other?: never,
+  placeholder?: never
+})) {
+  type GroupError = FormFieldError & {
+    value?: FormFieldError,
+    other?: FormFieldError
+  };
+
   return (
-    <Controller name={name} control={form.control} render={({ field, fieldState }) => (
-      <Field data-invalid={fieldState.invalid}>
-        <FieldLabel>{title} <span className="text-card-accent">*</span></FieldLabel>
-        <FieldGroup>
-          <div className="flex gap-2">
-            {items.map((item) => {
-              const selected = field.value === item;
+    <Controller name={name} control={form.control} render={({ field, fieldState }) => {
+      const error = fieldState.error as GroupError | undefined;
 
-              return (
-                <button
-                  key={`form-radio-${name}-${item}`}
-                  type="button"
-                  onClick={() => field.onChange(item)}
-                  className={
-                    selected ? "form-project-radio border-card-border bg-card-accent" : "form-project-radio border-white/20"
-                  }>
-                  {item}
-                </button>
-              )
-            })}
-          </div>
+      return (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel>{title} <span className="text-card-accent">*</span></FieldLabel>
+          <FieldGroup>
+            <div className="flex gap-2">
+              {items.map((item) => {
+                const selected = field.value.value === item;
 
-          {fieldState.invalid && (
-            <FieldError errors={[fieldState.error]} />
-          )}
+                return (
+                  <button
+                    key={`form-radio-${name}-${item}`}
+                    type="button"
+                    onClick={() => field.onChange({ ...field.value, value: item })}
+                    className={
+                      selected ? "form-project-radio border-card-border bg-card-accent" : "form-project-radio border-white/20"
+                    }>
+                    {item}
+                  </button>
+                )
+              })}
+            </div>
 
-          {field.value === OTHER && other && (
-            <Controller
+            {field.value.value === OTHER && other && <Controller
               name={other}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <Input
                     {...field}
-                    placeholder={otherPlaceholder}
+                    placeholder={placeholder}
                   />
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
                 </Field>
               )}
             />
-          )}
-        </FieldGroup>
-      </Field>
-    )} />
+            }
+
+            {fieldState.invalid && (
+              <FieldError errors={[error, error.value]} />
+            )}
+          </FieldGroup>
+        </Field>
+      )
+    }} />
   );
 }
 
@@ -267,7 +266,6 @@ function StepTwo({ form, who, onNext, onBack }: {
   async function handleNext() {
     const valid = await form.trigger([
       "goal",
-      "goalOther",
       "projectDescription",
     ]);
 
@@ -292,12 +290,16 @@ function StepTwo({ form, who, onNext, onBack }: {
                     border
                     border-white/20
                     rounded
+                    text-white
                     px-2
                     has-data-checked:border-card-border
                     has-data-checked:bg-card-accent">
-                  <Checkbox id={`form-1-goal-checkbox-${i}`} name={field.name} checked={field.value.includes(goal)} onCheckedChange={(checked) => {
-                    const newValue = checked ? [...field.value, goal] : field.value.filter((v) => v !== goal);
-                    field.onChange(newValue);
+                  <Checkbox id={`form-1-goal-checkbox-${i}`} name={field.name} checked={field.value.goal.includes(goal)} onCheckedChange={(checked) => {
+                    const newGoal = checked ? [...field.value.goal, goal] : field.value.goal.filter((v) => v !== goal);
+                    field.onChange({
+                      ...field.value,
+                      goal: newGoal
+                    });
                     field.onBlur();
                   }} />
                   <FieldLabel htmlFor={`form-1-goal-checkbox-${i}`} className="text-xs py-2">
@@ -306,24 +308,7 @@ function StepTwo({ form, who, onNext, onBack }: {
                 </Field>
               ))}
 
-              {field.value.includes("Other") && (
-                <Controller
-                  name="goalOther"
-                  control={form.control}
-                  render={({ field: goalOtherField, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <Input
-                        {...goalOtherField}
-                        placeholder="Tell us about your specific goal..."
-                      />
-
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              )}
+              {field.value.goal.includes("Other") && <FormInput form={form} name="goal.other" placeholder="Tell us about your specific goal..." />}
 
               {fieldState.invalid && (
                 <FieldError errors={[fieldState.error]} />
@@ -355,7 +340,6 @@ function StepThree({ form, onBack, onNext }: {
   async function handleNext() {
     const valid = await form.trigger([
       "format",
-      "formatOther",
       "videoLength",
       "resources",
       "visualStyle",
@@ -371,15 +355,18 @@ function StepThree({ form, onBack, onNext }: {
       <FieldSet>
         <FieldLegend>WOW THAT’S AN AMAZING IDEA</FieldLegend>
         <FieldSeparator />
+
         <FormRadioGroup
           form={form}
           name="format"
           title="Format"
           items={FORMATS}
-          other="formatOther"
-          otherPlaceholder="e.g. Square (1:1)"
+          other="format.other"
+          placeholder="e.g. Square (1:1)"
         />
+
         <FormRadioGroup form={form} name="videoLength" title="Approximate video length" items={VIDEO_LENGTHS} />
+
         <FormInput
           form={form}
           name="resources"
@@ -425,7 +412,6 @@ function StepFour({ form, onBack, onNext }: {
     const valid = await form.trigger([
       "budgetRange",
       "paymentMethod",
-      "paymentMethodOther"
     ]);
 
     onNext(valid);
@@ -442,8 +428,8 @@ function StepFour({ form, onBack, onNext }: {
           name="paymentMethod"
           items={PAYMENT_METHODS}
           title="What is your preferred payment method?"
-          other="paymentMethodOther"
-          otherPlaceholder="e.g. Bank transfer, Wise, Stripe..."
+          other="paymentMethod.other"
+          placeholder="e.g. Bank transfer, Wise, Stripe..."
         />
       </FieldSet>
       <div className="mt-5 flex justify-center gap-5">
@@ -463,7 +449,9 @@ function StepFive({ form, onBack }: {
       <FieldSet>
         <FieldLegend>FUH! THAT’S WAS TIRING</FieldLegend>
         <FieldSeparator />
-        <p>Aquí va a ir tu metodo de contacto</p>
+        <Field>
+          <FieldLabel>Which platform should we use to communicate?<span className="text-card-accent">*</span></FieldLabel>
+        </Field>
         <FormInput
           form={form}
           name="extraNotes"
@@ -485,10 +473,15 @@ function Form() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       who: "",
-      goal: [],
-      goalOther: "",
+      goal: {
+        goal: [],
+        other: ""
+      },
+      format: {},
+      paymentMethod: {},
       projectDescription: "",
-      formatOther: "",
+      videoLength: {},
+      budgetRange: {}
     }
   });
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -525,7 +518,7 @@ function Form() {
   return (
     <Section id="request-a-project" title="Get in Touch" subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
       <form ref={formRef} className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
-        <Progress value={step*100 / 4} />
+        <Progress value={step * 100 / 4} />
         {step === 0 && <StepOne form={form} onNext={onNext} />}
         {step === 1 && <StepTwo who={who} form={form} onNext={onNext} onBack={onBack} />}
         {step === 2 && <StepThree form={form} onNext={onNext} onBack={onBack} />}
