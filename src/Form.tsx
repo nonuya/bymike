@@ -120,6 +120,7 @@ const formSchema = z
     ),
 
     extraNotes: z.string().trim().optional(),
+    email: z.email({ error: "Please type a valid email" }).trim(),
   });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -449,9 +450,7 @@ function StepFive({ form, onBack }: {
       <FieldSet>
         <FieldLegend>FUH! THAT’S WAS TIRING</FieldLegend>
         <FieldSeparator />
-        <Field>
-          <FieldLabel>Which platform should we use to communicate?<span className="text-card-accent">*</span></FieldLabel>
-        </Field>
+        <FormInput form={form} name="email" title="Where can I contact you?" required placeholder="john.doe@example.com" />
         <FormInput
           form={form}
           name="extraNotes"
@@ -477,11 +476,21 @@ function Form() {
         goal: [],
         other: ""
       },
-      format: {},
-      paymentMethod: {},
+      format: {
+        other: "",
+      },
+      mood: "",
+      extraNotes: "",
+      musicReferences: "",
+      resources: "",
+      visualStyle: "",
+      email: "",
+      paymentMethod: {
+        other: "",
+      },
       projectDescription: "",
       videoLength: {},
-      budgetRange: {}
+      budgetRange: {},
     }
   });
   const formRef = useRef<HTMLFormElement | null>(null);
