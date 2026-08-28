@@ -115,37 +115,3 @@ export const formSchema = z
   });
 
 export type FormValues = z.infer<typeof formSchema>;
-
-export function convert_form_data_to_email(data: FormValues) {
-  return `
-Nombre: ${data.who}
-Email: ${data.email}
-
-Objetivos del video:
-${data.goal.goal.reduce((acc, x) => x === OTHER && data.goal.other ? [...acc, data.goal.other] : [...acc, x], []).map(v => ` * ${v}`).join("\n")}
-
-Descripción del proyecto:
-"${data.projectDescription}"
-
-Formato: ${data.format.value === "Other" && data.format.other ? data.format.other : data.format.value}
-
-Duración aproximada: ${data.videoLength.value}
-
-Recursos disponibles:
-"${data.resources}"
-
-Estilo visual: ${data.visualStyle}
-
-Referencias musicales:
-"${data.musicReferences}"
-
-Mood: ${data.mood || "No especificado"}
-
-Presupuesto: ${data.budgetRange.value}
-
-Método de pago: ${data.paymentMethod.value === "Other" && data.paymentMethod.other ? data.paymentMethod.other : data.paymentMethod.value}
-
-Notas adicionales:
-"${data.extraNotes || "Ninguna"}"
-`;
-}

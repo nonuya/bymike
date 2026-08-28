@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./components/ui/button";
 import { useRef, useState } from "react";
 import { Progress } from "./components/ui/progress";
-import { type FormValues, OTHER, GOALS, BUDGET_RANGES, FORMATS, PAYMENT_METHODS, VIDEO_LENGTHS, formSchema, convert_form_data_to_email } from "./lib/form";
+import { type FormValues, OTHER, GOALS, BUDGET_RANGES, FORMATS, PAYMENT_METHODS, VIDEO_LENGTHS, formSchema } from "./lib/form";
 import { Textarea } from "./components/ui/textarea";
 
 type StringFormPathInternal<T extends FieldPath<FormValues>> = T extends any ? NonNullable<FieldPathValue<FormValues, T>> extends string ? T : never : never;
@@ -401,7 +401,8 @@ function Form() {
   const who = form.watch("who");
 
   async function onSubmit(data: FormValues) {
-    console.log(convert_form_data_to_email(data));
+    // TODO: Implement this
+    // console.log(convert_form_data_to_email(data));
   }
 
   function focusForm() {

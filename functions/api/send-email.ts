@@ -1,4 +1,5 @@
-import { formSchema, convert_form_data_to_email } from '@/lib/form';
+import { formSchema } from '@/lib/form';
+import { convert_form_data_to_email } from '@/lib/string';
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const data = formSchema.safeParse(context.data);
