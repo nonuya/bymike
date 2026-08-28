@@ -57,5 +57,5 @@ export function get_status_message(is_available: boolean): string {
   const month = get_month_name(actual_month_date());
   const next_month = get_month_name(next_month_date())
 
-  return is_available ? `Slots available in ${month}` : `${month} is fully booked. You can book projects for ${next_month}`;
+  return is_available ? `Slots available in ${month}` : `${month} is fully booked. You can book projects for ${next_month} :)`;
 }
