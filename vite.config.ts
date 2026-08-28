@@ -3,6 +3,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import babel from '@rolldown/plugin-babel'
 import path from 'path'
+import { cloudflare } from '@cloudflare/vite-plugin';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,8 +11,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
+    cloudflare()
   ],
-  base: "/bymike/",
+  base: "/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),

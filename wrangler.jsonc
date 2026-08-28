@@ -1,0 +1,14 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2026-08-25",
+	"observability": {
+		"enabled": true
+	},
+	"upload_source_maps": true,
+  "kv_namespaces": [
+    {
+      "binding": "SETTINGS",
+      "id": "6db11f7ffbe64403851da3f35144ed3c"
+    }
+  ]
+}

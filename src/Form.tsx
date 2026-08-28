@@ -3,136 +3,23 @@ import { Input } from "./components/ui/input";
 import { Checkbox } from "./components/ui/checkbox";
 import { Section } from "./Section";
 import { Controller, useForm, type FieldError as FormFieldError, type FieldPath, type FieldPathValue, type FieldValues, type UseFormReturn } from "react-hook-form";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./components/ui/button";
 import { useRef, useState } from "react";
 import { Progress } from "./components/ui/progress";
+import { type FormValues, OTHER, GOALS, BUDGET_RANGES, FORMATS, PAYMENT_METHODS, VIDEO_LENGTHS, formSchema, convert_form_data_to_email } from "./lib/form";
+import { Textarea } from "./components/ui/textarea";
 
-const OTHER = "Other" as const;
-const GOALS = [
-  "Sell (High-Impact Ads / Social Media Ads)",
-  "Educate or Position (Brand Awareness / Tutorials)",
-  "Retain audience (Content for social media)",
-  OTHER,
-] as const;
-const FORMATS = ["Vertical (9:16)", "Horizontal (16:9)", OTHER] as const;
-const VIDEO_LENGTHS = ["< 15 Sec", "15-30 Sec", "30-60 Sec"] as const;
-const BUDGET_RANGES = ["$400-$700", "$700-$1k", ">$1k"] as const;
-const PAYMENT_METHODS = ["PayPal", OTHER] as const;
-
-const formSchema = z
-  .object({
-    who: z
-      .string({ error: "Please enter your name." })
-      .trim()
-      .min(1, "Please tell us your name."),
-
-    goal: z.object({
-      goal: z.array(z.enum(GOALS)),
-      other: z
-        .string({ error: "Please tell us your goal." })
-        .trim()
-        .optional(),
-    })
-      .refine((data) => data.goal.length > 0, {
-        message: "Please select at least one goal for your video."
-      })
-      .refine((data) => !data.goal.includes(OTHER) || !!data.other, {
-        message: "Please tell us what you'd like to achieve with this video.",
-      }),
-
-    projectDescription: z
-      .string({ error: "Please describe your project." })
-      .trim()
-      .min(1, "Please tell us a little about your project.")
-      .max(1000, "Please keep your project description under 1000 characters."),
-
-    format: z.object({
-      value: z.enum(
-        FORMATS,
-        { error: "Please choose a video format." },
-      ),
-      other: z
-        .string()
-        .trim()
-        .optional(),
-    })
-      .refine(
-        (data) =>
-          data.value !== OTHER ||
-          Boolean(data.other),
-        {
-          message: "Please describe the format you'd like to use.",
-        },
-      ),
-
-    videoLength: z.object({
-      value: z.enum(
-        VIDEO_LENGTHS,
-        { error: "Please choose an approximate video length." },
-      ),
-    }),
-
-    resources: z
-      .string({ error: "Please tell us what resources you can provide." })
-      .trim()
-      .min(1, "Please tell us what resources you can provide."),
-
-    visualStyle: z
-      .string({ error: "Please describe the visual style you're looking for." })
-      .trim()
-      .min(1, "Please describe the visual style you're looking for."),
-
-    musicReferences: z
-      .string({ error: "Please provide your music references." })
-      .trim()
-      .min(1, "Please provide at least one music reference."),
-
-    mood: z
-      .string()
-      .trim()
-      .optional(),
-
-    budgetRange: z.object({
-      value: z.enum(
-        BUDGET_RANGES,
-        { error: "Please choose a budget range." },
-      ),
-    }),
-
-    paymentMethod: z.object({
-      value: z.enum(
-        PAYMENT_METHODS,
-        { error: "Please choose a payment method." },
-      ),
-      other: z
-        .string()
-        .trim()
-        .optional(),
-    }).refine(
-      (data) =>
-        data.value !== OTHER ||
-        Boolean(data.other),
-      {
-        message: "Please specify how you'd prefer to pay.",
-      },
-    ),
-
-    extraNotes: z.string().trim().optional(),
-    email: z.email({ error: "Please type a valid email" }).trim(),
-  });
-
-type FormValues = z.infer<typeof formSchema>;
 type StringFormPathInternal<T extends FieldPath<FormValues>> = T extends any ? NonNullable<FieldPathValue<FormValues, T>> extends string ? T : never : never;
 type StringFormPath = StringFormPathInternal<FieldPath<FormValues>>;
 
-function FormInput({ form, name, title, required, placeholder }: {
+function FormInput({ form, name, title, required, placeholder, multiline }: {
   form: UseFormReturn<FormValues>,
   title?: string,
   placeholder: string,
   required?: boolean,
   name: StringFormPath,
+  multiline?: boolean
 }) {
   return (
     <Controller
@@ -140,8 +27,14 @@ function FormInput({ form, name, title, required, placeholder }: {
       control={form.control}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          {title && <FieldLabel>{title} {required && <span className="text-card-accent">*</span>}</FieldLabel>}
-          <Input {...field} placeholder={placeholder} />
+          {title && <FieldLabel htmlFor={`form-input-${field.name}`}>{title} {required && <span className="text-card-accent">*</span>}</FieldLabel>}
+
+          {
+            multiline ?
+              <Textarea {...field} id={`form-input-${field.name}`} placeholder={placeholder} className="resize-y" /> :
+              <Input {...field} id={`form-input-${field.name}`} placeholder={placeholder} />
+          }
+
           {fieldState.invalid && (
             <FieldError errors={[fieldState.error]} />
           )}
@@ -215,7 +108,7 @@ function FormRadioGroup<Name extends EnumProps<FormValues>>({ form, items, name,
             }
 
             {fieldState.invalid && (
-              <FieldError errors={[error, error.value]} />
+              <FieldError errors={[error, error?.value]} />
             )}
           </FieldGroup>
         </Field>
@@ -275,16 +168,16 @@ function StepTwo({ form, who, onNext, onBack }: {
 
   return (
     <>
-      <FieldSet>
+      <FieldSet className="min-w-0">
         <FieldLegend>HI {who} :D! NICE TO MEET YOU</FieldLegend>
         <FieldSeparator />
         <Controller name="goal" control={form.control} render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel>What is the goal of the video? <span className="text-card-accent">*</span></FieldLabel>
-            <FieldGroup>
+            <FieldGroup id="form-1-goal">
               {GOALS.map((goal, i, _) => (
                 <Field
-                  key={`form-1-goal-${i}`}
+                  key={i}
                   orientation="horizontal"
                   className="
                     transition-colors
@@ -302,7 +195,14 @@ function StepTwo({ form, who, onNext, onBack }: {
                       goal: newGoal
                     });
                     field.onBlur();
-                  }} />
+                  }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.currentTarget.click();
+                      }
+                    }}
+                  />
                   <FieldLabel htmlFor={`form-1-goal-checkbox-${i}`} className="text-xs py-2">
                     {goal}
                   </FieldLabel>
@@ -322,6 +222,7 @@ function StepTwo({ form, who, onNext, onBack }: {
           title="Briefly describe your project"
           form={form}
           placeholder="Tell us what you're creating and what you'd like to achieve..."
+          multiline
           required
         />
       </FieldSet>
@@ -353,7 +254,7 @@ function StepThree({ form, onBack, onNext }: {
 
   return (
     <>
-      <FieldSet>
+      <FieldSet className="min-w-0">
         <FieldLegend>WOW THAT’S AN AMAZING IDEA</FieldLegend>
         <FieldSeparator />
 
@@ -373,6 +274,7 @@ function StepThree({ form, onBack, onNext }: {
           name="resources"
           title="What resources are you providing?"
           placeholder="e.g. Drive link, footage, branding, script, references..."
+          multiline
           required
         />
         <FormInput
@@ -387,6 +289,7 @@ function StepThree({ form, onBack, onNext }: {
           name="musicReferences"
           title="Music references"
           placeholder="Paste links to songs, playlists, or references..."
+          multiline
           required
         />
         <FormInput
@@ -447,7 +350,7 @@ function StepFive({ form, onBack }: {
 }) {
   return (
     <>
-      <FieldSet>
+      <FieldSet className="min-w-0">
         <FieldLegend>FUH! THAT’S WAS TIRING</FieldLegend>
         <FieldSeparator />
         <FormInput form={form} name="email" title="Where can I contact you?" required placeholder="john.doe@example.com" />
@@ -456,6 +359,7 @@ function StepFive({ form, onBack }: {
           name="extraNotes"
           title="Wanna say something more? I'm all ears"
           placeholder="Anything else you'd like us to know?"
+          multiline
         />
       </FieldSet>
       <div className="mt-5 flex justify-center gap-5">
@@ -494,11 +398,10 @@ function Form() {
     }
   });
   const formRef = useRef<HTMLFormElement | null>(null);
-
   const who = form.watch("who");
 
-  function onSubmit(data: FormValues) {
-    console.log(data);
+  async function onSubmit(data: FormValues) {
+    console.log(convert_form_data_to_email(data));
   }
 
   function focusForm() {

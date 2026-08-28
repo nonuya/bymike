@@ -4,7 +4,10 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    "types": [
+      "./worker-configuration.d.ts",
+      "vite/client"
+    ],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
@@ -26,5 +29,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "functions"]
 }
