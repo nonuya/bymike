@@ -5,11 +5,12 @@ import { Section } from "./Section";
 import { Controller, useForm, type FieldError as FormFieldError, type FieldPath, type FieldPathValue, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./components/ui/button";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Progress } from "./components/ui/progress";
 import { type FormValues, OTHER, GOALS, BUDGET_RANGES, FORMATS, PAYMENT_METHODS, VIDEO_LENGTHS, formSchema } from "./lib/form";
 import { Textarea } from "./components/ui/textarea";
-import { convert_form_data_to_email } from "./lib/string";
+import { convert_form_data_to_email, get_status_message } from "./lib/string";
+import { cn } from "./lib/utils";
 
 type StringFormPathInternal<T extends FieldPath<FormValues>> = T extends any ? NonNullable<FieldPathValue<FormValues, T>> extends string ? T : never : never;
 type StringFormPath = StringFormPathInternal<FieldPath<FormValues>>;
@@ -371,8 +372,20 @@ function StepFive({ form, onBack }: {
   );
 }
 
+function Badge({ available }: {
+  available: boolean
+}) {
+  return <div className={cn("border rounded-full py-1 px-20 font-geist font-bold text-sm text-center -mb-3",
+    available ?
+      "border-green-600 text-green-500" :
+      "border-red-600 text-red-500")}>
+    {get_status_message(available)}
+  </div>;
+}
+
 function Form() {
   const [step, setStep] = useState(0);
+  const [available, setAvailable] = useState<boolean | null>(null);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -405,6 +418,25 @@ function Form() {
     console.log(convert_form_data_to_email(data));
   }
 
+  useEffect(() => {
+    async function load_available() {
+      try {
+        const response = await fetch("/api/available");
+
+        if (!response.ok) {
+          throw new Error("Failed to load availability.");
+        }
+
+        const value = await response.text();
+
+        setAvailable(value === "yes");
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    load_available();
+  }, []);
+
   function focusForm() {
     requestAnimationFrame(() => {
       formRef.current?.scrollIntoView({
@@ -430,6 +462,7 @@ function Form() {
 
   return (
     <Section id="request-a-project" title="Get in Touch" subtitle="Ready to discuss your next project? Fill out the form below and we'll get back to you within 24 hours.">
+      {available !== null && <Badge available={available} />}
       <form ref={formRef} className="border-2 border-card-border rounded rounded-[1rem] bg-card p-6 gap-4 flex flex-col w-full" onSubmit={form.handleSubmit(onSubmit)}>
         <Progress value={step * 100 / 4} />
         {step === 0 && <StepOne form={form} onNext={onNext} />}

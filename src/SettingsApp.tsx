@@ -75,6 +75,12 @@ export default function App() {
     setError(null);
   }
 
+  function handleOnChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setAvailable(e.target.value === "yes" ? "yes" : "no");
+    setLog(null);
+    setError(null);
+  }
+
   return <div>
     <h3>--- Settings ---</h3>
     <a href="/">Back</a>
@@ -85,7 +91,7 @@ export default function App() {
       <br /> <br />
       <label htmlFor="available">¿Aceptar clientes? </label>
 
-      <select id="available" name="available" value={available} onChange={(e) => e.target.value == "yes" ? setAvailable("yes") : setAvailable("no")} required>
+      <select id="available" name="available" value={available} onChange={handleOnChange} required>
         <option value="yes">Sí</option>
         <option value="no">No</option>
       </select>
