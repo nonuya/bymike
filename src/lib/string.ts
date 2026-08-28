@@ -6,7 +6,10 @@ Nombre: ${data.who}
 Email: ${data.email}
 
 Objetivos del video:
-${data.goal.goal.reduce((acc, x) => x === OTHER && data.goal.other ? [...acc, data.goal.other] : [...acc, x], []).map(v => ` * ${v}`).join("\n")}
+${data.goal.goal
+  .map((x) => x === OTHER && data.goal.other ? data.goal.other : x)
+  .map((v) => ` * ${v}`)
+  .join("\n")}
 
 Descripción del proyecto:
 "${data.projectDescription}"

@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { Progress } from "./components/ui/progress";
 import { type FormValues, OTHER, GOALS, BUDGET_RANGES, FORMATS, PAYMENT_METHODS, VIDEO_LENGTHS, formSchema } from "./lib/form";
 import { Textarea } from "./components/ui/textarea";
+import { convert_form_data_to_email } from "./lib/string";
 
 type StringFormPathInternal<T extends FieldPath<FormValues>> = T extends any ? NonNullable<FieldPathValue<FormValues, T>> extends string ? T : never : never;
 type StringFormPath = StringFormPathInternal<FieldPath<FormValues>>;
@@ -401,8 +402,7 @@ function Form() {
   const who = form.watch("who");
 
   async function onSubmit(data: FormValues) {
-    // TODO: Implement this
-    // console.log(convert_form_data_to_email(data));
+    console.log(convert_form_data_to_email(data));
   }
 
   function focusForm() {
